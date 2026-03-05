@@ -19,8 +19,7 @@
 
 body {
     font-family: var(--font-body);
-    /* THE FIX: To make glassmorphism pop, we need a subtle abstract background. 
-       This is a high-end, unisex white/silver fluid texture. */
+    /* CUSTOM BACKGROUND RESTORED! */
     background: url('background.jpg') center/cover no-repeat fixed;
     background-color: #f4f4f5;
     color: var(--dark);
@@ -193,4 +192,3 @@ input:focus, textarea:focus { outline: none; background: rgba(255, 255, 255, 0.9
     .nav-links::-webkit-scrollbar { display: none; }
     .nav-links li { white-space: nowrap; }
 }
-
