@@ -103,5 +103,26 @@ input:focus { outline: none; border-color: var(--gold); }
 @media (max-width: 768px) {
     .checkout-container, .modal-body-grid, .admin-container { grid-template-columns: 1fr; }
     .hero h1 { font-size: 2.5rem; }
-    .nav-links { display: none; /* Add hamburger menu logic later if needed */ }
+    
+    /* MOBILE APP NAVIGATION UPGRADE */
+    nav { 
+        flex-direction: column; 
+        gap: 15px; 
+        padding: 15px 5%; 
+    }
+    .nav-links { 
+        display: flex; 
+        width: 100%; 
+        overflow-x: auto; /* Enables horizontal swiping */
+        justify-content: flex-start; 
+        gap: 20px;
+        padding-bottom: 5px; 
+        scrollbar-width: none; /* Hides the ugly scrollbar in Firefox */
+    }
+    .nav-links::-webkit-scrollbar { 
+        display: none; /* Hides the ugly scrollbar in Chrome/Safari/iOS */
+    }
+    .nav-links li { 
+        white-space: nowrap; /* Forces links to stay on one line */
+    }
 }
