@@ -4,6 +4,9 @@ const SUPABASE_KEY = 'sb_publishable_KhhAED2Z2Vq2IJvJvA4JYQ_Fgs2QqhC';
 
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// --- INITIALIZE EMAILJS ---
+emailjs.init("rffuW_Hdh69azO9iY");
+
 // --- 2. GLOBAL STATE ---
 let products = [];
 let currentCategory = 'All'; 
@@ -233,12 +236,36 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
         console.error("Checkout Error:", error);
         alert("There was an error processing your order. Please try again.");
     } else {
+        // Deduct Stock
         for (let item of cart) {
             const product = products.find(p => p.id === item.id);
             if (product && product.stock_quantity > 0) {
                 await client.from('products').update({ stock_quantity: product.stock_quantity - 1 }).eq('id', item.id);
             }
         }
+
+        // Format the cart into a neat HTML list for the email
+        let itemsListHtml = '<ul style="margin: 0; padding-left: 20px;">';
+        cart.forEach(item => {
+            itemsListHtml += `<li style="margin-bottom: 5px;"><strong>${item.name}</strong> - Option: ${item.selectedSize} (GHS ${parseFloat(item.price).toFixed(2)})</li>`;
+        });
+        itemsListHtml += '</ul>';
+
+        // SEND EMAIL NOTIFICATION VIA EMAILJS
+        emailjs.send("service_mudquvm", "template_rkricc9", {
+            customer_name: orderData.customer_name,
+            amount: orderData.amount,
+            momo_number: orderData.momo_number,
+            transaction_ref: orderData.transaction_ref,
+            order_summary: itemsListHtml 
+        }).then(
+            function(response) {
+                console.log("Email notification sent successfully", response);
+            },
+            function(error) {
+                console.error("Email notification failed", error);
+            }
+        );
 
         alert('Payment Details Submitted Successfully! \n\nWe will verify your MoMo transaction and contact you regarding delivery.');
         cart = []; 
