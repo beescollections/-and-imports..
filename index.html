@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -93,7 +94,7 @@
                     <input type="text" id="transaction-ref" placeholder="Transaction Reference ID" required>
                     <input type="number" id="amount-paid" placeholder="Amount Paid (GHS)" required>
                     <div class="file-upload">
-                        <label>Screenshot of Payment (Optional)</label>
+                        <label for="payment-screenshot">Screenshot of Payment (Optional)</label>
                         <input type="file" id="payment-screenshot" accept="image/*">
                     </div>
                     <button type="submit" class="btn-primary">Confirm Payment</button>
@@ -164,7 +165,7 @@
                         <textarea id="new-desc" placeholder="Product Description..." rows="3" required style="padding: 10px; font-family: 'Poppins', sans-serif; border: 1px solid #ccc; border-radius: 5px;"></textarea>
                         
                         <div class="file-upload" style="margin-bottom: 10px; text-align: left;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Upload Photo:</label>
+                            <label for="new-image-file" style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Upload Photo:</label>
                             <input type="file" id="new-image-file" accept="image/*" required style="width: 100%;">
                         </div>
 
