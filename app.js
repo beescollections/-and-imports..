@@ -40,18 +40,49 @@ async function fetchProducts() {
     }
 }
 
-// --- 4. NAVIGATION & FILTERING ---
+// --- 4. NAVIGATION & ROUTING ---
 function navigate(pageId) {
-    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    document.getElementById(pageId).classList.add('active');
+    // This allows our existing buttons to easily change the URL
+    window.location.hash = pageId; 
+}
+
+function handleRouting() {
+    // Get the page name from the URL (removes the '#')
+    let pageId = window.location.hash.substring(1);
+    if (!pageId) pageId = 'home'; // Default to home if no hash
+
+    const pages = document.querySelectorAll('.page');
+    let pageExists = false;
+
+    // Hide all pages, show the active one
+    pages.forEach(page => {
+        if (page.id === pageId) {
+            page.classList.add('active');
+            pageExists = true;
+        } else {
+            page.classList.remove('active');
+        }
+    });
+
+    // Fallback if a customer types a broken link
+    if (!pageExists) {
+        document.getElementById('home').classList.add('active');
+        pageId = 'home';
+    }
+
     window.scrollTo(0, 0);
     
+    // Run page-specific logic
     if (pageId === 'cart') renderCart();
     if (pageId === 'admin') {
         renderAdminInventory();
         fetchOrders(); 
     }
 }
+
+// Listen for the Back/Forward buttons, and the initial page load!
+window.addEventListener('hashchange', handleRouting);
+window.addEventListener('load', handleRouting);
 
 function filterProducts() {
     currentCategory = document.getElementById('category-filter').value;
@@ -501,7 +532,7 @@ async function markOrderComplete(orderId) {
     }
 }
 
-// NEW: Delete Order Logic
+// Delete Order Logic
 async function deleteOrder(orderId) {
     if(confirm("Are you sure you want to permanently delete this order record? This cannot be undone.")) {
         const { error } = await client.from('payments').delete().eq('id', orderId);
