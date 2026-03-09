@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#2563EB">
     <link rel="apple-touch-icon" href="icon-192.png">
     <title>Bee's Collections and Import</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
@@ -29,9 +29,11 @@
         
         <section id="home" class="page active">
             <div class="hero">
-                <h1>Everyday Style, Everyday Home</h1>
-                <p>From stunning dresses and accessories to top-tier home appliances. We sell and import it all.</p>
-                <button class="btn-primary" onclick="navigate('shop')">Shop the Collection</button>
+                <div class="hero-glass-card">
+                    <h1>Everyday Style, Everyday Home</h1>
+                    <p>From stunning dresses and accessories to top-tier kitchen appliances. We sell and import it all.</p>
+                    <button class="btn-primary" onclick="navigate('shop')">Shop the Collection</button>
+                </div>
             </div>
         </section>
 
@@ -117,11 +119,11 @@
             <div class="text-container" style="text-align: center;">
                 <p>Have questions about a product or order? We are here to help.</p>
                 
-                <div style="margin: 30px 0; padding: 25px; background: rgba(255,255,255,0.65); backdrop-filter: blur(10px); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
+                <div style="margin: 30px 0; padding: 25px; background: #fff; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
                     <h3 style="margin-bottom: 20px; font-family: var(--font-heading); color: var(--gold); text-align: center;">Connect With Us</h3>
                     <p style="margin: 15px 0; font-size: 1.1rem;"><strong>📞 Phone:</strong> <a href="tel:+233240332608" style="color: var(--dark); text-decoration: none;">0240332608</a></p>
-                    <p style="margin: 15px 0; font-size: 1.1rem;"><strong>💬 WhatsApp:</strong> <a href="https://wa.me/233240332608" target="_blank" style="color: var(--dark); text-decoration: none; font-weight: 500;">Chat with us</a></p>
-                    <p style="margin: 15px 0; font-size: 1.1rem;"><strong>👻 Snapchat:</strong> <a href="https://snapchat.com/add/nana_akosuab" target="_blank" style="color: var(--dark); text-shadow: none; text-decoration: none; font-weight: 600;">@nana_akosuab</a></p>
+                    <p style="margin: 15px 0; font-size: 1.1rem;"><strong>💬 WhatsApp:</strong> <a href="https://wa.me/233240332608" target="_blank" style="color: #25D366; text-decoration: none; font-weight: 500;">Chat with us</a></p>
+                    <p style="margin: 15px 0; font-size: 1.1rem;"><strong>👻 Snapchat:</strong> <a href="https://snapchat.com/add/nana_akosuab" target="_blank" style="color: #FFFC00; text-shadow: 0px 0px 1px #000; text-decoration: none; font-weight: 600;">@nana_akosuab</a></p>
                     <p style="margin: 15px 0; font-size: 1.1rem;"><strong>🎵 TikTok:</strong> <a href="https://www.tiktok.com/@bees_collections" target="_blank" style="color: var(--dark); text-decoration: none; font-weight: 500;">@bees_collections</a></p>
                 </div>
             </div>
@@ -132,8 +134,8 @@
             <div class="checkout-container" style="grid-template-columns: 1fr; max-width: 400px;">
                 <form id="login-form">
                     <p style="text-align: center; margin-bottom: 15px;">Secure Staff Access</p>
-                    <input type="email" id="admin-email" placeholder="Admin Email" required style="margin-bottom: 15px; width: 100%; border-radius: 5px;">
-                    <input type="password" id="admin-password" placeholder="Password" required style="margin-bottom: 15px; width: 100%; border-radius: 5px;">
+                    <input type="email" id="admin-email" placeholder="Admin Email" required style="margin-bottom: 15px; width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px;">
+                    <input type="password" id="admin-password" placeholder="Password" required style="margin-bottom: 15px; width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 5px;">
                     <button type="submit" class="btn-primary" style="width: 100%;">Secure Login</button>
                 </form>
             </div>
@@ -143,7 +145,7 @@
             <h2 class="section-title">Store Admin Dashboard</h2>
             
             <div style="text-align: center; margin-bottom: 30px;">
-                <button onclick="adminLogout()" style="background: #000; color: #fff; border: 1px solid #000; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Secure Logout</button>
+                <button onclick="adminLogout()" style="background: #333; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">Secure Logout</button>
             </div>
 
             <div class="admin-container">
@@ -155,7 +157,7 @@
                         
                         <input type="number" id="new-stock" placeholder="Quantity in Stock" required style="margin-bottom: 15px; width: 100%;">
 
-                        <select id="new-category" required style="padding: 12px; border-radius: 5px; font-family: var(--font-body); margin-bottom: 15px; width: 100%;">
+                        <select id="new-category" required style="padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-family: var(--font-body); margin-bottom: 15px; width: 100%;">
                             <option value="" disabled selected>Select a Category...</option>
                             <option value="Dresses">Dresses (Party, Dinner, SHEIN)</option>
                             <option value="Clothing">Clothing & Nightwear</option>
@@ -165,10 +167,10 @@
                             <option value="Kitchen Appliances">Kitchen Appliances & Home</option>
                         </select>
 
-                        <textarea id="new-desc" placeholder="Product Description..." rows="3" required style="padding: 10px; font-family: 'Poppins', sans-serif; border-radius: 5px;"></textarea>
+                        <textarea id="new-desc" placeholder="Product Description..." rows="3" required style="padding: 10px; font-family: 'Poppins', sans-serif; border: 1px solid #ccc; border-radius: 5px;"></textarea>
                         
                         <div class="file-upload" style="margin-bottom: 10px; text-align: left;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Upload Photo:</label>
+                            <label for="new-image-file" style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Upload Photo:</label>
                             <input type="file" id="new-image-file" accept="image/*" required style="width: 100%;">
                         </div>
 
@@ -184,7 +186,7 @@
 
                 <div class="admin-box" style="grid-column: 1 / -1; margin-top: 20px;">
                     <h3>📦 Incoming Customer Orders</h3>
-                    <input type="text" id="order-search" placeholder="Search orders by Customer Name, MoMo Number, or Ref ID..." onkeyup="searchOrders()" style="width: 100%; margin-top: 15px;">
+                    <input type="text" id="order-search" placeholder="Search orders by Customer Name, MoMo Number, or Ref ID..." onkeyup="searchOrders()" style="width: 100%; padding: 12px; margin-top: 15px; border: 1px solid #ccc; border-radius: 5px; font-family: var(--font-body);">
                     <div id="admin-orders-list" style="margin-top: 15px; max-height: 500px; overflow-y: auto;">
                         <p>Loading orders...</p>
                     </div>
@@ -193,14 +195,14 @@
             </div>
         </section>
 
-        <footer style="text-align: center; padding: 40px 20px; margin-top: 40px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 0.9rem; color: var(--dark);">
+        <footer style="text-align: center; padding: 40px 20px; margin-top: 40px; border-top: 1px solid #eee; font-size: 0.9rem; color: #666;">
             <div style="margin-bottom: 15px;">
-                <a href="https://wa.me/233240332608" target="_blank" style="margin: 0 10px; color: var(--dark); text-decoration: none; font-weight: 500;">WhatsApp</a> |
-                <a href="https://snapchat.com/add/nana_akosuab" target="_blank" style="margin: 0 10px; color: var(--dark); text-decoration: none; font-weight: 500;">Snapchat</a> |
-                <a href="https://www.tiktok.com/@bees_collections" target="_blank" style="margin: 0 10px; color: var(--dark); text-decoration: none; font-weight: 500;">TikTok</a>
+                <a href="https://wa.me/233240332608" target="_blank" style="margin: 0 10px; color: #666; text-decoration: none; font-weight: 500;">WhatsApp</a> |
+                <a href="https://snapchat.com/add/nana_akosuab" target="_blank" style="margin: 0 10px; color: #666; text-decoration: none; font-weight: 500;">Snapchat</a> |
+                <a href="https://www.tiktok.com/@bees_collections" target="_blank" style="margin: 0 10px; color: #666; text-decoration: none; font-weight: 500;">TikTok</a>
             </div>
             <p>&copy; 2026 Bee's Collections and Import. All rights reserved.</p>
-            <a href="#login" style="color: #666; text-decoration: none; font-size: 0.8rem; margin-top: 10px; display: inline-block;">Staff Login</a>
+            <a href="#login" style="color: #ccc; text-decoration: none; font-size: 0.8rem; margin-top: 10px; display: inline-block;">Staff Login</a>
         </footer>
     </div>
 
@@ -212,7 +214,15 @@
         </div>
     </div>
 
-   <script src="app.js"></script>
-   </body>
+    <script src="app.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(registration => console.log('App Engine Registered!'))
+            .catch(err => console.log('App Engine Failed: ', err));
+        });
+      }
+    </script>
+</body>
 </html>
-
