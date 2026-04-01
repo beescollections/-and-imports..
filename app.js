@@ -1,3 +1,6 @@
+// --- 0. API KEYS ---
+const PAYSTACK_PUBLIC_KEY = 'pk_live_0e7c17571693c054970ee243c4c9f2b3e8f7a14a';
+
 // --- 1. SUPABASE CONNECTION ---
 const SUPABASE_URL = 'https://blqgodxcqjgpuscoxzah.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_KhhAED2Z2Vq2IJvJvA4JYQ_Fgs2QqhC';
@@ -223,8 +226,8 @@ function removeFromCart(cartId) {
     renderCart(); 
 }
 
-// --- 7. CHECKOUT LOGIC ---
-document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+// --- 7. CHECKOUT LOGIC (PAYSTACK AUTOMATION) ---
+document.getElementById('checkout-form').addEventListener('submit', function(e) {
     e.preventDefault();
 
     if(cart.length === 0) {
@@ -232,100 +235,100 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
         return;
     }
 
+    // Securely calculate exact total from the cart 
     let exactCartTotal = 0;
     cart.forEach(item => exactCartTotal += parseFloat(item.price));
-    
-    const userAmountPaid = parseFloat(document.getElementById('amount-paid').value);
 
-    // Exact amount enforcement
-    if (userAmountPaid < exactCartTotal) {
-        alert(`Payment Incomplete!\n\nYour cart total is GHS ${exactCartTotal.toFixed(2)}, but you only entered GHS ${userAmountPaid.toFixed(2)}.\n\nPlease pay the full amount to place your order.`);
-        return; 
-    }
+    const email = document.getElementById('cust-email').value;
+    const name = document.getElementById('cust-name').value;
+    const phone = document.getElementById('momo-number').value;
+    const address = document.getElementById('delivery-address').value;
 
-    const btn = e.target.querySelector('button');
-    btn.innerText = 'Uploading Screenshot...';
+    const btn = document.getElementById('pay-btn');
+    btn.innerText = 'Opening Secure Checkout...';
     btn.disabled = true;
 
-    // --- NEW: UPLOAD THE SCREENSHOT TO SUPABASE ---
-    const screenshotFile = document.getElementById('payment-screenshot').files[0];
-    let screenshotUrl = null;
+    // Initialize Paystack Pop-up
+    let handler = PaystackPop.setup({
+        key: PAYSTACK_PUBLIC_KEY, 
+        email: email,
+        amount: exactCartTotal * 100, // Paystack requires the amount in Pesewas (multiply by 100)
+        currency: 'GHS',
+        ref: 'BEE_' + Math.floor((Math.random() * 1000000000) + 1), 
+        metadata: {
+            custom_fields: [
+                { display_name: "Customer Name", variable_name: "customer_name", value: name },
+                { display_name: "Phone Number", variable_name: "phone_number", value: phone }
+            ]
+        },
+        callback: async function(response) {
+            // THIS RUNS ONLY IF PAYMENT IS SUCCESSFUL
+            const paystackReference = response.reference;
+            btn.innerText = 'Processing Order...';
 
-    if (screenshotFile) {
-        const fileName = `momo-${Date.now()}-${screenshotFile.name.replace(/\s+/g, '-')}`;
-        const { data: uploadData, error: uploadError } = await client.storage
-            .from('payment-screenshots')
-            .upload(fileName, screenshotFile);
+            const orderData = {
+                customer_name: name,
+                momo_number: phone, 
+                transaction_ref: paystackReference, 
+                amount: exactCartTotal, 
+                delivery_address: address,
+                screenshot_url: null, // No longer using screenshots
+                cart_items: cart,
+                status: 'Paid - Pending Delivery'
+            };
 
-        if (uploadError) {
-            console.error("Upload error:", uploadError);
-            alert("Failed to upload payment screenshot. Please check your internet connection.");
-            btn.innerText = 'Confirm Payment';
-            btn.disabled = false;
-            return; // Stop the checkout if the image fails
-        }
+            const { error } = await client.from('payments').insert([orderData]);
 
-        const { data: urlData } = client.storage.from('payment-screenshots').getPublicUrl(fileName);
-        screenshotUrl = urlData.publicUrl;
-    }
+            if (error) {
+                console.error("Checkout Error:", error);
+                alert("Payment successful, but order failed to save. Please contact support with Reference ID: " + paystackReference);
+            } else {
+                // Deduct Stock
+                for (let item of cart) {
+                    const product = products.find(p => p.id === item.id);
+                    if (product && product.stock_quantity > 0) {
+                        await client.from('products').update({ stock_quantity: product.stock_quantity - 1 }).eq('id', item.id);
+                    }
+                }
 
-    btn.innerText = 'Submitting Order...';
+                let itemsListHtml = '<ul style="margin: 0; padding-left: 20px;">';
+                cart.forEach(item => {
+                    itemsListHtml += `<li style="margin-bottom: 5px;"><strong>${item.name}</strong> - Option: ${item.selectedSize} (GHS ${parseFloat(item.price).toFixed(2)})</li>`;
+                });
+                itemsListHtml += '</ul>';
 
-    const orderData = {
-        customer_name: document.getElementById('cust-name').value,
-        momo_number: document.getElementById('momo-number').value,
-        transaction_ref: document.getElementById('transaction-ref').value,
-        amount: userAmountPaid,
-        delivery_address: document.getElementById('delivery-address').value,
-        screenshot_url: screenshotUrl,
-        cart_items: cart,
-        status: 'pending'
-    };
+                // SEND EMAIL NOTIFICATION VIA EMAILJS
+                emailjs.send("service_mudquvm", "template_rkricc9", {
+                    customer_name: orderData.customer_name,
+                    amount: orderData.amount,
+                    momo_number: orderData.momo_number,
+                    transaction_ref: orderData.transaction_ref,
+                    delivery_address: orderData.delivery_address,
+                    order_summary: itemsListHtml 
+                }).then(
+                    function(response) { console.log("Email notification sent successfully", response); },
+                    function(error) { console.error("Email notification failed", error); }
+                );
 
-    const { error } = await client.from('payments').insert([orderData]);
-
-    if (error) {
-        console.error("Checkout Error:", error);
-        alert("There was an error processing your order. Please try again.");
-    } else {
-        // Deduct Stock
-        for (let item of cart) {
-            const product = products.find(p => p.id === item.id);
-            if (product && product.stock_quantity > 0) {
-                await client.from('products').update({ stock_quantity: product.stock_quantity - 1 }).eq('id', item.id);
+                alert('Payment Successful! \n\nThank you for shopping with Bee\'s Collections. We will contact you regarding delivery.');
+                cart = []; 
+                localStorage.removeItem('beeCart');
+                document.getElementById('cart-count').innerText = '0';
+                document.getElementById('checkout-form').reset(); 
+                navigate('home');
+                fetchProducts(); 
             }
+            btn.innerText = 'Pay Now Securely';
+            btn.disabled = false;
+        },
+        onClose: function() {
+            alert('Transaction was cancelled. Your account was not charged.');
+            btn.innerText = 'Pay Now Securely';
+            btn.disabled = false;
         }
+    });
 
-        let itemsListHtml = '<ul style="margin: 0; padding-left: 20px;">';
-        cart.forEach(item => {
-            itemsListHtml += `<li style="margin-bottom: 5px;"><strong>${item.name}</strong> - Option: ${item.selectedSize} (GHS ${parseFloat(item.price).toFixed(2)})</li>`;
-        });
-        itemsListHtml += '</ul>';
-
-        // SEND EMAIL NOTIFICATION VIA EMAILJS
-        emailjs.send("service_mudquvm", "template_rkricc9", {
-            customer_name: orderData.customer_name,
-            amount: orderData.amount,
-            momo_number: orderData.momo_number,
-            transaction_ref: orderData.transaction_ref,
-            delivery_address: orderData.delivery_address,
-            order_summary: itemsListHtml 
-        }).then(
-            function(response) { console.log("Email notification sent successfully", response); },
-            function(error) { console.error("Email notification failed", error); }
-        );
-
-        alert('Payment Details Submitted Successfully! \n\nWe will verify your MoMo transaction and contact you regarding delivery.');
-        cart = []; 
-        localStorage.removeItem('beeCart');
-        document.getElementById('cart-count').innerText = '0';
-        e.target.reset(); 
-        navigate('home');
-        fetchProducts(); 
-    }
-
-    btn.innerText = 'Confirm Payment';
-    btn.disabled = false;
+    handler.openIframe();
 });
 
 // --- 8. ADMIN DASHBOARD LOGIC ---
@@ -489,23 +492,8 @@ function renderAdminOrders(orders) {
         }
         itemsHtml += '</ul>';
 
-        const amountPaid = parseFloat(order.amount) || 0;
-        const balance = cartTotal - amountPaid;
+        // Removed screenshot button logic since payment is handled directly by Paystack
         
-        let balanceHtml = '';
-        if (balance > 0) {
-            balanceHtml = `<p style="color: #ff4d4d; font-weight: bold; font-size: 0.95rem; margin-top: 5px;">⚠️ Balance Due: GHS ${balance.toFixed(2)}</p>`;
-        } else if (balance < 0) {
-            balanceHtml = `<p style="color: #007bff; font-weight: bold; font-size: 0.95rem; margin-top: 5px;">ℹ️ Overpaid by: GHS ${Math.abs(balance).toFixed(2)}</p>`;
-        } else {
-            balanceHtml = `<p style="color: #25D366; font-weight: bold; font-size: 0.95rem; margin-top: 5px;">✅ Fully Paid</p>`;
-        }
-
-        // Generate Screenshot Button
-        const screenshotBtn = order.screenshot_url 
-            ? `<a href="${order.screenshot_url}" target="_blank" style="display: inline-block; margin-top: 10px; padding: 6px 12px; background: var(--dark); color: #fff; text-decoration: none; border-radius: 5px; font-size: 0.8rem; font-weight: bold;">📄 View MoMo Receipt</a>`
-            : `<p style="color: red; font-size: 0.85rem; margin-top: 10px;">No Receipt Uploaded</p>`;
-
         list.innerHTML += `
             <div style="background: var(--cream); padding: 15px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid var(--gold); position: relative;">
                 
@@ -515,8 +503,8 @@ function renderAdminOrders(orders) {
                 </div>
 
                 <h4 style="margin-bottom: 5px; max-width: 65%;">Order from: ${order.customer_name}</h4>
-                <p style="font-size: 0.85rem; margin-bottom: 2px;"><strong>MoMo Number:</strong> ${order.momo_number}</p>
-                <p style="font-size: 0.85rem; margin-bottom: 2px;"><strong>Ref ID:</strong> ${order.transaction_ref}</p>
+                <p style="font-size: 0.85rem; margin-bottom: 2px;"><strong>Contact Number:</strong> ${order.momo_number}</p>
+                <p style="font-size: 0.85rem; margin-bottom: 2px;"><strong>Paystack Ref:</strong> <span style="font-family: monospace;">${order.transaction_ref}</span></p>
                 <p style="font-size: 0.85rem; margin-bottom: 2px;"><strong>Delivery Address:</strong> ${order.delivery_address || 'Not provided'}</p>
                 <p style="font-size: 0.85rem; margin-bottom: 10px;"><strong>Status:</strong> <span style="color: ${order.status === 'Completed' ? 'green' : 'orange'}; font-weight: bold;">${order.status.toUpperCase()}</span></p>
                 
@@ -524,10 +512,8 @@ function renderAdminOrders(orders) {
                 ${itemsHtml}
                 
                 <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc;">
-                    <p style="font-size: 0.9rem; margin-bottom: 3px;"><strong>Cart Total Price:</strong> GHS ${cartTotal.toFixed(2)}</p>
-                    <p style="font-size: 0.9rem; margin-bottom: 3px;"><strong>Amount Paid by Customer:</strong> GHS ${amountPaid.toFixed(2)}</p>
-                    ${balanceHtml}
-                    ${screenshotBtn}
+                    <p style="font-size: 0.9rem; margin-bottom: 3px;"><strong>Amount Paid via Paystack:</strong> GHS ${parseFloat(order.amount).toFixed(2)}</p>
+                    <p style="color: #25D366; font-weight: bold; font-size: 0.95rem; margin-top: 5px;">✅ Securely Paid</p>
                 </div>
             </div>
         `;
